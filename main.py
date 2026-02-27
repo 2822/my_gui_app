@@ -1,30 +1,50 @@
-import tkinter as tk
+import customtkinter as ctk
 from tkinter import messagebox
 
-def on_button_click():
-    messagebox.showinfo("Hola", "¡Has pulsado el botón!")
+# Configuración inicial de CustomTkinter
+ctk.set_appearance_mode("dark")  # Modos: "System" (standard), "Dark", "Light"
+ctk.set_default_color_theme("blue")  # Temas: "blue" (standard), "green", "dark-blue"
 
-def increment_counter():
-    global counter
-    counter += 1
-    label_counter.config(text=f"Contador: {counter}")
+class App(ctk.CTk):
+    def __init__(self):
+        super().__init__()
 
-root = tk.Tk()
-root.title("Mi Aplicación Termux")
-root.geometry("300x200")
+        self.title("Termux Modern UI")
+        self.geometry("400x320")
+        self.counter = 0
 
-counter = 0
+        # Título principal
+        self.label = ctk.CTkLabel(self, text="¡Bienvenido a tu App!", font=ctk.CTkFont(size=20, weight="bold"))
+        self.label.pack(pady=20)
 
-label = tk.Label(root, text="¡Bienvenido a tu App!", font=("Arial", 14))
-label.pack(pady=10)
+        # Botón de saludo
+        self.btn_saludo = ctk.CTkButton(self, text="Saludar", command=self.on_button_click)
+        self.btn_saludo.pack(pady=10)
 
-btn_saludo = tk.Button(root, text="Saludar", command=on_button_click)
-btn_saludo.pack(pady=5)
+        # Contador
+        self.label_counter = ctk.CTkLabel(self, text=f"Contador: {self.counter}")
+        self.label_counter.pack(pady=10)
 
-label_counter = tk.Label(root, text="Contador: 0")
-label_counter.pack(pady=5)
+        # Botón para incrementar
+        self.btn_counter = ctk.CTkButton(self, text="Incrementar", command=self.increment_counter, fg_color="green", hover_color="#006400")
+        self.btn_counter.pack(pady=10)
 
-btn_counter = tk.Button(root, text="Incrementar", command=increment_counter)
-btn_counter.pack(pady=5)
+        # Selector de Modo (Oscuro/Claro)
+        self.appearance_mode_optionemenu = ctk.CTkOptionMenu(self, values=["Light", "Dark", "System"],
+                                                               command=self.change_appearance_mode_event)
+        self.appearance_mode_optionemenu.pack(pady=20)
+        self.appearance_mode_optionemenu.set("Dark")
 
-root.mainloop()
+    def on_button_click(self):
+        messagebox.showinfo("Hola", "¡Has pulsado el botón moderno!")
+
+    def increment_counter(self):
+        self.counter += 1
+        self.label_counter.configure(text=f"Contador: {self.counter}")
+
+    def change_appearance_mode_event(self, new_appearance_mode: str):
+        ctk.set_appearance_mode(new_appearance_mode)
+
+if __name__ == "__main__":
+    app = App()
+    app.mainloop()
