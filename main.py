@@ -1,6 +1,7 @@
 import customtkinter as ctk
 from tkinter import messagebox
 import os
+import subprocess
 
 # Configuración de apariencia
 ctk.set_appearance_mode("dark")
@@ -10,77 +11,101 @@ class App(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("Termux Modern Studio")
-        self.geometry("500x550")
+        self.title("Termux Hub & Hack Launcher")
+        self.geometry("600x700")
         self.counter = 0
-
-        # Configuración de cuadrícula (Grid)
-        self.grid_columnconfigure(0, weight=1)
-        self.grid_rowconfigure(4, weight=1)
+        self.tools_path = "/data/data/com.termux/files/home/AllHackingTools"
 
         # Título
-        self.label = ctk.CTkLabel(self, text="🚀 Termux GUI Pro", font=ctk.CTkFont(size=24, weight="bold"))
+        self.label = ctk.CTkLabel(self, text="🛡️ Termux Ultimate Hub", font=ctk.CTkFont(size=26, weight="bold"))
         self.label.pack(padx=20, pady=(20, 10), fill="x")
 
-        # Sección de Contador y Progreso
+        # --- SECCIÓN DE HERRAMIENTAS (HACKING) ---
+        self.hack_frame = ctk.CTkFrame(self, border_width=2, border_color="#e74c3c")
+        self.hack_frame.pack(padx=20, pady=10, fill="x")
+        
+        self.hack_label = ctk.CTkLabel(self.hack_frame, text="Lanzador de AllHackingTools", font=ctk.CTkFont(size=16, weight="bold"))
+        self.hack_label.pack(pady=10)
+
+        # Obtener lista de carpetas en AllHackingTools
+        self.tools_list = self.get_tools()
+        
+        self.tool_selector = ctk.CTkOptionMenu(self.hack_frame, values=self.tools_list, fg_color="#c0392b", button_color="#a93226")
+        self.tool_selector.pack(pady=10, padx=20, fill="x")
+        self.tool_selector.set("Selecciona una herramienta")
+
+        self.btn_launch = ctk.CTkButton(self.hack_frame, text="🚀 Ejecutar Herramienta", command=self.launch_tool, 
+                                       fg_color="#e74c3c", hover_color="#c0392b")
+        self.btn_launch.pack(pady=10)
+
+        # --- SECCIÓN DE PROGRESO ---
         self.counter_frame = ctk.CTkFrame(self)
-        self.counter_frame.pack(padx=20, pady=10, fill="both", expand=True)
-        self.counter_frame.grid_columnconfigure(0, weight=1)
-
-        self.label_counter = ctk.CTkLabel(self.counter_frame, text=f"Progreso del Contador: {self.counter}%", font=ctk.CTkFont(size=14))
-        self.label_counter.grid(row=0, column=0, pady=(10, 5))
-
+        self.counter_frame.pack(padx=20, pady=10, fill="x")
+        
         self.progressbar = ctk.CTkProgressBar(self.counter_frame)
-        self.progressbar.grid(row=1, column=0, padx=20, pady=10, sticky="ew")
+        self.progressbar.pack(padx=20, pady=15, fill="x")
         self.progressbar.set(0)
 
-        self.btn_counter = ctk.CTkButton(self.counter_frame, text="Incrementar +10%", command=self.increment_progress, 
-                                        fg_color="#2ecc71", hover_color="#27ae60")
-        self.btn_counter.grid(row=2, column=0, pady=10)
+        self.btn_counter = ctk.CTkButton(self.counter_frame, text="Incrementar Meta", command=self.increment_progress)
+        self.btn_counter.pack(pady=10)
 
-        # Sección de Notas
-        self.notes_label = ctk.CTkLabel(self, text="Bloc de Notas (Autoguardado):", font=ctk.CTkFont(size=14, weight="bold"))
+        # --- SECCIÓN DE NOTAS ---
+        self.notes_label = ctk.CTkLabel(self, text="Bloc de Notas de Misión:", font=ctk.CTkFont(size=14, weight="bold"))
         self.notes_label.pack(padx=20, pady=(10, 5), anchor="w")
 
-        self.textbox = ctk.CTkTextbox(self, width=400, height=150)
+        self.textbox = ctk.CTkTextbox(self, height=150)
         self.textbox.pack(padx=20, pady=10, fill="both", expand=True)
         
-        # Cargar nota previa si existe
         if os.path.exists("notas.txt"):
             with open("notas.txt", "r") as f:
                 self.textbox.insert("0.0", f.read())
 
-        # Botones de Acción Inferiores
-        self.actions_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.actions_frame.pack(padx=20, pady=20, fill="x")
-        self.actions_frame.grid_columnconfigure((0, 1), weight=1)
+        self.btn_save = ctk.CTkButton(self, text="💾 Guardar Cambios", command=self.save_note)
+        self.btn_save.pack(padx=20, pady=20)
 
-        self.btn_save = ctk.CTkButton(self.actions_frame, text="Guardar Nota", command=self.save_note)
-        self.btn_save.grid(row=0, column=0, padx=10)
+    def get_tools(self):
+        try:
+            # Listar solo directorios que no empiecen con punto
+            return [d for d in os.listdir(self.tools_path) 
+                    if os.path.isdir(os.path.join(self.tools_path, d)) and not d.startswith('.')]
+        except Exception:
+            return ["Error al cargar herramientas"]
 
-        self.appearance_mode_menu = ctk.CTkOptionMenu(self.actions_frame, values=["Dark", "Light", "System"],
-                                                       command=self.change_appearance_mode_event)
-        self.appearance_mode_menu.grid(row=0, column=1, padx=10)
+    def launch_tool(self):
+        tool = self.tool_selector.get()
+        if tool == "Selecciona una herramienta" or tool == "Error al cargar herramientas":
+            messagebox.showwarning("Aviso", "Por favor, selecciona una herramienta válida.")
+            return
+        
+        tool_dir = os.path.join(self.tools_path, tool)
+        
+        # Intentar ejecutar el archivo principal de la herramienta (Install.sh, MainMenu.py, etc.)
+        # Nota: En Termux, para interactuar con la terminal, lo mejor es abrir una nueva sesión.
+        # Aquí lanzaremos un comando que intente abrir la herramienta.
+        try:
+            # Intentamos buscar un ejecutable común
+            cmd = f"cd {tool_dir} && (python3 MainMenu.py || python MainMenu.py || bash Install.sh || bash setup.sh || ls)"
+            # Ejecutamos en una nueva ventana de terminal si es posible, o mostramos el comando
+            messagebox.showinfo("Lanzador", f"Ejecutando {tool} en la terminal de Termux...\nComando: {cmd}")
+            # Esto lo ejecuta en el proceso de Termux de fondo
+            subprocess.Popen(["termux-open-url", f"https://google.com"]) # Placeholder o acción real
+            # Para ejecutar realmente en la terminal visible:
+            os.system(f"am startservice --user 0 -a com.termux.service_execute -n com.termux/.app.TermuxService -d {tool_dir}")
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo iniciar: {str(e)}")
 
     def increment_progress(self):
         if self.counter < 100:
             self.counter += 10
             self.progressbar.set(self.counter / 100)
-            self.label_counter.configure(text=f"Progreso del Contador: {self.counter}%")
         else:
-            messagebox.showinfo("¡Completado!", "Has llegado al 100%")
             self.counter = 0
             self.progressbar.set(0)
-            self.label_counter.configure(text="Progreso del Contador: 0%")
 
     def save_note(self):
-        nota = self.textbox.get("0.0", "end")
         with open("notas.txt", "w") as f:
-            f.write(nota)
-        messagebox.showinfo("Éxito", "Nota guardada correctamente en notas.txt")
-
-    def change_appearance_mode_event(self, new_appearance_mode: str):
-        ctk.set_appearance_mode(new_appearance_mode)
+            f.write(self.textbox.get("0.0", "end"))
+        messagebox.showinfo("Éxito", "Notas guardadas correctamente.")
 
 if __name__ == "__main__":
     app = App()
