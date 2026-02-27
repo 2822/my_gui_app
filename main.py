@@ -11,56 +11,51 @@ class App(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("Termux Fullscreen Launcher")
-        
-        # Ajustar bordes al tamaño de la pantalla (Pantalla Completa)
+        self.title("Termux Clean Hub Pro")
         self.attributes("-fullscreen", True)
-        
-        # Permitir salir de pantalla completa con la tecla Escape (opcional)
         self.bind("<Escape>", lambda e: self.attributes("-fullscreen", False))
-
         self.tools_path = "/data/data/com.termux/files/home/AllHackingTools"
 
         # Título
-        self.label = ctk.CTkLabel(self, text="🛡️ Smart Termux Hub", font=ctk.CTkFont(size=26, weight="bold"))
-        self.label.pack(padx=20, pady=(30, 20), fill="x")
+        self.label = ctk.CTkLabel(self, text="🛡️ X11 Integrated Hub", font=ctk.CTkFont(size=26, weight="bold"))
+        self.label.pack(padx=20, pady=(40, 20), fill="x")
 
         # --- SECCIÓN DE HERRAMIENTAS (HACKING) ---
         self.hack_frame = ctk.CTkFrame(self, border_width=2, border_color="#e74c3c")
-        self.hack_frame.pack(padx=20, pady=10, fill="x")
+        self.hack_frame.pack(padx=30, pady=20, fill="x")
         
-        self.hack_label = ctk.CTkLabel(self.hack_frame, text="Lanzador Inteligente de Herramientas", font=ctk.CTkFont(size=16, weight="bold"))
-        self.hack_label.pack(pady=10)
+        self.hack_label = ctk.CTkLabel(self.hack_frame, text="Lanzador en Ventana de X11", font=ctk.CTkFont(size=18, weight="bold"))
+        self.hack_label.pack(pady=15)
 
         self.tools_list = self.get_tools()
         self.tool_selector = ctk.CTkOptionMenu(self.hack_frame, values=self.tools_list, fg_color="#c0392b", button_color="#a93226")
-        self.tool_selector.pack(pady=15, padx=20, fill="x")
+        self.tool_selector.pack(pady=15, padx=30, fill="x")
         self.tool_selector.set("Selecciona una herramienta")
 
-        self.btn_launch = ctk.CTkButton(self.hack_frame, text="🚀 Lanzamiento Inteligente", command=self.launch_tool, 
-                                       fg_color="#e74c3c", hover_color="#c0392b")
-        self.btn_launch.pack(pady=15)
+        self.btn_launch = ctk.CTkButton(self.hack_frame, text="🚀 Lanzar en Nueva Ventana", command=self.launch_tool, 
+                                       fg_color="#e74c3c", hover_color="#c0392b", height=40)
+        self.btn_launch.pack(pady=20)
 
-        self.status_label = ctk.CTkLabel(self.hack_frame, text="Estado: Esperando selección...", font=ctk.CTkFont(size=12, slant="italic"))
+        self.status_label = ctk.CTkLabel(self.hack_frame, text="Estado: Sistema Listo", font=ctk.CTkFont(size=12, slant="italic"))
         self.status_label.pack(pady=(0, 15))
 
         # --- SECCIÓN DE ACCIONES INFERIORES ---
         self.actions_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.actions_frame.pack(padx=20, pady=20, fill="x")
+        self.actions_frame.pack(padx=30, pady=30, fill="x", side="bottom")
         self.actions_frame.grid_columnconfigure((0, 1), weight=1)
 
-        self.btn_termux = ctk.CTkButton(self.actions_frame, text="📟 Abrir Termux", command=self.open_termux, 
-                                       fg_color="#34495e", hover_color="#2c3e50")
-        self.btn_termux.grid(row=0, column=0, padx=10, pady=5, sticky="ew")
+        self.btn_termux = ctk.CTkButton(self.actions_frame, text="📟 Terminal", command=self.open_terminal, 
+                                       fg_color="#34495e", hover_color="#2c3e50", height=45)
+        self.btn_termux.grid(row=0, column=0, padx=15, pady=5, sticky="ew")
 
         self.btn_restart = ctk.CTkButton(self.actions_frame, text="🔄 Reiniciar App", command=self.restart_app,
-                                        fg_color="#f39c12", hover_color="#e67e22")
-        self.btn_restart.grid(row=0, column=1, padx=10, pady=5, sticky="ew")
+                                        fg_color="#f39c12", hover_color="#e67e22", height=45)
+        self.btn_restart.grid(row=0, column=1, padx=15, pady=5, sticky="ew")
 
-        # Selector de Tema
+        # Selector de Tema (Opcional)
         self.appearance_mode_menu = ctk.CTkOptionMenu(self, values=["Dark", "Light", "System"],
                                                        command=self.change_appearance_mode_event)
-        self.appearance_mode_menu.pack(pady=20)
+        self.appearance_mode_menu.pack(pady=10, side="bottom")
 
     def get_tools(self):
         try:
@@ -78,27 +73,29 @@ class App(ctk.CTk):
         for f in files:
             if f.endswith(".py"): return f"python3 {f}"
             if f.endswith(".sh"): return f"bash {f}"
-        return "ls -la"
+        return ""
 
     def launch_tool(self):
         tool = self.tool_selector.get()
-        if tool == "Selecciona una herramienta" or tool == "Error al cargar herramientas":
-            messagebox.showwarning("Aviso", "Selecciona una herramienta válida.")
+        if tool == "Selecciona una herramienta":
             return
         
         tool_dir = os.path.join(self.tools_path, tool)
         exec_cmd = self.detect_executable(tool_dir)
-        self.status_label.configure(text=f"Detectado: {exec_cmd}", text_color="#2ecc71")
         
-        full_command = f"chmod +x {os.path.join(tool_dir, exec_cmd.split()[-1])} && cd {tool_dir} && {exec_cmd}"
-        try:
-            os.system(f"am startservice --user 0 -a com.termux.service_execute -n com.termux/.app.TermuxService -d '{full_command}'")
-            messagebox.showinfo("Lanzador", f"Ejecutando {tool} en Termux.")
-        except Exception as e:
-            messagebox.showerror("Error", f"No se pudo iniciar: {e}")
+        if not exec_cmd:
+            exec_cmd = "bash" # Fallback a terminal si no se detecta nada
 
-    def open_termux(self):
-        os.system("am start --user 0 -n com.termux/.app.TermuxActivity")
+        self.status_label.configure(text=f"Abriendo: {tool}...", text_color="#2ecc71")
+        
+        # Ejecutamos en una nueva ventana de aterm dentro de X11
+        # El comando 'aterm -e bash -c ...' mantiene la terminal abierta al terminar
+        command = f"cd {tool_dir} && chmod +x {exec_cmd.split()[-1]} && {exec_cmd}; exec bash"
+        subprocess.Popen(["aterm", "-e", "bash", "-c", command])
+
+    def open_terminal(self):
+        # Abre una terminal aterm local en X11
+        subprocess.Popen(["aterm", "-e", "bash"])
 
     def restart_app(self):
         os.system("pkill -f python && bash /data/data/com.termux/files/home/my_gui_app/start_app.sh &")
