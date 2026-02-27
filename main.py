@@ -83,8 +83,9 @@ class App(ctk.CTk):
 
     def open_termux(self):
         try:
-            # Comando para traer Termux al frente
+            # Comando definitivo para traer la terminal de Termux al frente en Android
             os.system("am start --user 0 -n com.termux/.app.TermuxActivity")
+            self.status_label.configure(text="Estado: Cambiando a Termux...", text_color="#3498db")
         except Exception as e:
             messagebox.showerror("Error", f"No se pudo abrir Termux: {e}")
 
