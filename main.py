@@ -68,6 +68,7 @@ class App(ctk.CTk):
         self.actions_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.actions_frame.pack(padx=20, pady=10, fill="x")
         self.actions_frame.grid_columnconfigure((0, 1), weight=1)
+        self.actions_frame.grid_rowconfigure((0, 1), weight=1)
 
         self.btn_save = ctk.CTkButton(self.actions_frame, text="💾 Guardar Notas", command=self.save_note)
         self.btn_save.grid(row=0, column=0, padx=5, pady=5, sticky="ew")
@@ -76,6 +77,14 @@ class App(ctk.CTk):
                                        fg_color="#34495e", hover_color="#2c3e50")
         self.btn_termux.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
 
+        self.btn_browser = ctk.CTkButton(self.actions_frame, text="🌐 Abrir Navegador", command=self.open_browser,
+                                        fg_color="#2980b9", hover_color="#3498db")
+        self.btn_browser.grid(row=1, column=0, padx=5, pady=5, sticky="ew")
+
+        self.btn_restart = ctk.CTkButton(self.actions_frame, text="🔄 Reiniciar App", command=self.restart_app,
+                                        fg_color="#f39c12", hover_color="#e67e22")
+        self.btn_restart.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
+
         # Selector de Tema al final
         self.appearance_mode_menu = ctk.CTkOptionMenu(self, values=["Dark", "Light", "System"],
                                                        command=self.change_appearance_mode_event)
@@ -83,11 +92,22 @@ class App(ctk.CTk):
 
     def open_termux(self):
         try:
-            # Comando definitivo para traer la terminal de Termux al frente en Android
             os.system("am start --user 0 -n com.termux/.app.TermuxActivity")
             self.status_label.configure(text="Estado: Cambiando a Termux...", text_color="#3498db")
         except Exception as e:
             messagebox.showerror("Error", f"No se pudo abrir Termux: {e}")
+
+    def open_browser(self):
+        try:
+            # Abre el navegador predeterminado en Google o una URL vacía
+            os.system("termux-open-url https://www.google.com")
+            self.status_label.configure(text="Estado: Abriendo Navegador...", text_color="#3498db")
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo abrir el navegador: {e}")
+
+    def restart_app(self):
+        # Reinicia el script actual
+        os.system("pkill -f python && bash /data/data/com.termux/files/home/my_gui_app/start_app.sh &")
 
     def change_appearance_mode_event(self, new_appearance_mode: str):
         ctk.set_appearance_mode(new_appearance_mode)
