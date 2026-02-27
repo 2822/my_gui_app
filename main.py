@@ -11,8 +11,14 @@ class App(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("Termux Minimal Launcher")
-        self.geometry("500x450")
+        self.title("Termux Fullscreen Launcher")
+        
+        # Ajustar bordes al tamaño de la pantalla (Pantalla Completa)
+        self.attributes("-fullscreen", True)
+        
+        # Permitir salir de pantalla completa con la tecla Escape (opcional)
+        self.bind("<Escape>", lambda e: self.attributes("-fullscreen", False))
+
         self.tools_path = "/data/data/com.termux/files/home/AllHackingTools"
 
         # Título
