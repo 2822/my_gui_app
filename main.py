@@ -88,6 +88,9 @@ class App(ctk.CTk):
         except Exception as e:
             messagebox.showerror("Error", f"No se pudo abrir Termux: {e}")
 
+    def change_appearance_mode_event(self, new_appearance_mode: str):
+        ctk.set_appearance_mode(new_appearance_mode)
+
     def get_tools(self):
         try:
             return sorted([d for d in os.listdir(self.tools_path) 
