@@ -11,7 +11,7 @@ class App(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("Termux Pro Control Center")
+        self.title("Termux Clean Hub Pro")
         self.geometry("900x700")
         
         # Rutas
@@ -20,24 +20,14 @@ class App(ctk.CTk):
 
         # --- TÍTULO ---
         self.label = ctk.CTkLabel(self, text="🛡️ Termux Command Center", font=ctk.CTkFont(size=28, weight="bold"))
-        self.label.pack(padx=20, pady=(30, 10), fill="x")
-
-        # --- SECCIÓN: ACCESO RÁPIDO (METASPLOIT) ---
-        self.quick_frame = ctk.CTkFrame(self, border_width=2, border_color="#e74c3c")
-        self.quick_frame.pack(padx=30, pady=10, fill="x")
-        
-        self.msf_button = ctk.CTkButton(self.quick_frame, text="🔥 LANZAR METASPLOIT (msfconsole)", 
-                                       command=self.launch_msf, 
-                                       fg_color="#c0392b", hover_color="#a93226", 
-                                       height=50, font=ctk.CTkFont(size=16, weight="bold"))
-        self.msf_button.pack(padx=20, pady=20, fill="x")
+        self.label.pack(padx=20, pady=(40, 20), fill="x")
 
         # --- SECCIÓN: MENÚ DE HERRAMIENTAS (HOME) ---
         self.home_label = ctk.CTkLabel(self, text="📂 Explorador de Herramientas (Home)", font=ctk.CTkFont(size=18, weight="bold"))
-        self.home_label.pack(pady=(20, 10))
+        self.home_label.pack(pady=(10, 10))
 
         # Marco con scroll para las herramientas del home
-        self.scroll_frame = ctk.CTkScrollableFrame(self, width=800, height=350, label_text="Tus Carpetas en ~/")
+        self.scroll_frame = ctk.CTkScrollableFrame(self, width=800, height=450, label_text="Tus Carpetas en ~/")
         self.scroll_frame.pack(padx=30, pady=10, fill="both", expand=True)
 
         self.sync_home_menu()
@@ -77,11 +67,6 @@ class App(ctk.CTk):
         except Exception as e:
             error_lbl = ctk.CTkLabel(self.scroll_frame, text=f"Error al sincronizar: {e}")
             error_lbl.pack()
-
-    def launch_msf(self):
-        # Lanzar msfconsole en una ventana de aterm
-        # Se usa 'exec msfconsole' para que la ventana se cierre al salir de msf
-        subprocess.Popen(["aterm", "-title", "Metasploit Framework", "-e", "bash", "-c", "msfconsole"])
 
     def launch_from_home(self, folder_name):
         tool_dir = os.path.join(self.home_path, folder_name)
