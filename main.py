@@ -12,8 +12,10 @@ class App(ctk.CTk):
         super().__init__()
 
         self.title("Termux Clean Hub Pro")
-        self.attributes("-fullscreen", True)
-        self.bind("<Escape>", lambda e: self.attributes("-fullscreen", False))
+        self.geometry("800x600") # Tamaño inicial razonable
+        
+        # Ya no forzamos pantalla completa para que Openbox ponga los controles
+        # Pero permitimos que el usuario la maximice si quiere
         self.tools_path = "/data/data/com.termux/files/home/AllHackingTools"
 
         # Título
