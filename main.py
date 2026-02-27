@@ -64,8 +64,29 @@ class App(ctk.CTk):
             with open("notas.txt", "r") as f:
                 self.textbox.insert("0.0", f.read())
 
-        self.btn_save = ctk.CTkButton(self, text="💾 Guardar Cambios", command=self.save_note)
-        self.btn_save.pack(padx=20, pady=20)
+        # --- SECCIÓN DE ACCIONES INFERIORES ---
+        self.actions_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.actions_frame.pack(padx=20, pady=10, fill="x")
+        self.actions_frame.grid_columnconfigure((0, 1), weight=1)
+
+        self.btn_save = ctk.CTkButton(self.actions_frame, text="💾 Guardar Notas", command=self.save_note)
+        self.btn_save.grid(row=0, column=0, padx=5, pady=5, sticky="ew")
+
+        self.btn_termux = ctk.CTkButton(self.actions_frame, text="📟 Abrir Termux", command=self.open_termux, 
+                                       fg_color="#34495e", hover_color="#2c3e50")
+        self.btn_termux.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
+
+        # Selector de Tema al final
+        self.appearance_mode_menu = ctk.CTkOptionMenu(self, values=["Dark", "Light", "System"],
+                                                       command=self.change_appearance_mode_event)
+        self.appearance_mode_menu.pack(pady=10)
+
+    def open_termux(self):
+        try:
+            # Comando para traer Termux al frente
+            os.system("am start --user 0 -n com.termux/.app.TermuxActivity")
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo abrir Termux: {e}")
 
     def get_tools(self):
         try:
