@@ -11,13 +11,13 @@ class App(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("Termux Clean Hub")
-        self.geometry("600x650")
+        self.title("Termux Minimal Launcher")
+        self.geometry("500x450")
         self.tools_path = "/data/data/com.termux/files/home/AllHackingTools"
 
         # Título
         self.label = ctk.CTkLabel(self, text="🛡️ Smart Termux Hub", font=ctk.CTkFont(size=26, weight="bold"))
-        self.label.pack(padx=20, pady=(20, 10), fill="x")
+        self.label.pack(padx=20, pady=(30, 20), fill="x")
 
         # --- SECCIÓN DE HERRAMIENTAS (HACKING) ---
         self.hack_frame = ctk.CTkFrame(self, border_width=2, border_color="#e74c3c")
@@ -28,48 +28,33 @@ class App(ctk.CTk):
 
         self.tools_list = self.get_tools()
         self.tool_selector = ctk.CTkOptionMenu(self.hack_frame, values=self.tools_list, fg_color="#c0392b", button_color="#a93226")
-        self.tool_selector.pack(pady=10, padx=20, fill="x")
+        self.tool_selector.pack(pady=15, padx=20, fill="x")
         self.tool_selector.set("Selecciona una herramienta")
 
         self.btn_launch = ctk.CTkButton(self.hack_frame, text="🚀 Lanzamiento Inteligente", command=self.launch_tool, 
                                        fg_color="#e74c3c", hover_color="#c0392b")
-        self.btn_launch.pack(pady=10)
+        self.btn_launch.pack(pady=15)
 
         self.status_label = ctk.CTkLabel(self.hack_frame, text="Estado: Esperando selección...", font=ctk.CTkFont(size=12, slant="italic"))
-        self.status_label.pack(pady=(0, 10))
-
-        # --- SECCIÓN DE NOTAS (SOLO LECTURA/ESCRITURA TEMPORAL) ---
-        self.notes_label = ctk.CTkLabel(self, text="Bloc de Notas de Misión:", font=ctk.CTkFont(size=14, weight="bold"))
-        self.notes_label.pack(padx=20, pady=(10, 5), anchor="w")
-
-        self.textbox = ctk.CTkTextbox(self, height=200)
-        self.textbox.pack(padx=20, pady=10, fill="both", expand=True)
-        
-        if os.path.exists("notas.txt"):
-            with open("notas.txt", "r") as f:
-                self.textbox.insert("0.0", f.read())
+        self.status_label.pack(pady=(0, 15))
 
         # --- SECCIÓN DE ACCIONES INFERIORES ---
         self.actions_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.actions_frame.pack(padx=20, pady=10, fill="x")
-        self.actions_frame.grid_columnconfigure((0, 1, 2), weight=1)
+        self.actions_frame.pack(padx=20, pady=20, fill="x")
+        self.actions_frame.grid_columnconfigure((0, 1), weight=1)
 
         self.btn_termux = ctk.CTkButton(self.actions_frame, text="📟 Abrir Termux", command=self.open_termux, 
                                        fg_color="#34495e", hover_color="#2c3e50")
-        self.btn_termux.grid(row=0, column=0, padx=5, pady=5, sticky="ew")
-
-        self.btn_browser = ctk.CTkButton(self.actions_frame, text="🌐 Abrir Navegador", command=self.open_browser,
-                                        fg_color="#2980b9", hover_color="#3498db")
-        self.btn_browser.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
+        self.btn_termux.grid(row=0, column=0, padx=10, pady=5, sticky="ew")
 
         self.btn_restart = ctk.CTkButton(self.actions_frame, text="🔄 Reiniciar App", command=self.restart_app,
                                         fg_color="#f39c12", hover_color="#e67e22")
-        self.btn_restart.grid(row=0, column=2, padx=5, pady=5, sticky="ew")
+        self.btn_restart.grid(row=0, column=1, padx=10, pady=5, sticky="ew")
 
         # Selector de Tema
         self.appearance_mode_menu = ctk.CTkOptionMenu(self, values=["Dark", "Light", "System"],
                                                        command=self.change_appearance_mode_event)
-        self.appearance_mode_menu.pack(pady=10)
+        self.appearance_mode_menu.pack(pady=20)
 
     def get_tools(self):
         try:
@@ -108,9 +93,6 @@ class App(ctk.CTk):
 
     def open_termux(self):
         os.system("am start --user 0 -n com.termux/.app.TermuxActivity")
-
-    def open_browser(self):
-        os.system("termux-open-url https://www.google.com")
 
     def restart_app(self):
         os.system("pkill -f python && bash /data/data/com.termux/files/home/my_gui_app/start_app.sh &")
