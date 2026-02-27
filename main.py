@@ -129,14 +129,12 @@ class App(ctk.CTk):
         # Mensaje de confirmación con el comando detectado
         self.status_label.configure(text=f"Detectado: {exec_cmd}", text_color="#2ecc71")
         
-        full_command = f"cd {tool_dir} && {exec_cmd}"
+        full_command = f"chmod +x {os.path.join(tool_dir, exec_cmd.split()[-1])} && cd {tool_dir} && {exec_cmd}"
         
         # En Termux-X11, lo ideal es enviar el comando a una nueva sesión de terminal
-        # O usar am start para abrir una nueva pestaña de Termux
         try:
-            # Copiamos al portapapeles o mostramos info (ya que estamos en GUI X11)
-            # Para ejecutarlo realmente en la terminal principal de Termux:
-            os.system(f"am startservice --user 0 -a com.termux.service_execute -n com.termux/.app.TermuxService -d {full_command}")
+            # Aseguramos que el archivo sea ejecutable y lo lanzamos
+            os.system(f"am startservice --user 0 -a com.termux.service_execute -n com.termux/.app.TermuxService -d '{full_command}'")
             messagebox.showinfo("Lanzador Inteligente", f"Herramienta: {tool}\nComando ejecutado: {exec_cmd}\n\nRevisa tu terminal principal de Termux.")
         except Exception as e:
             messagebox.showerror("Error", f"No se pudo iniciar: {str(e)}")
