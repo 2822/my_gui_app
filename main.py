@@ -11,20 +11,20 @@ class App(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("Termux Hub & Hack Launcher")
-        self.geometry("600x700")
+        self.title("Termux Smart Hacking Launcher")
+        self.geometry("600x750")
         self.counter = 0
         self.tools_path = "/data/data/com.termux/files/home/AllHackingTools"
 
         # Título
-        self.label = ctk.CTkLabel(self, text="🛡️ Termux Ultimate Hub", font=ctk.CTkFont(size=26, weight="bold"))
+        self.label = ctk.CTkLabel(self, text="🛡️ Smart Termux Hub", font=ctk.CTkFont(size=26, weight="bold"))
         self.label.pack(padx=20, pady=(20, 10), fill="x")
 
         # --- SECCIÓN DE HERRAMIENTAS (HACKING) ---
         self.hack_frame = ctk.CTkFrame(self, border_width=2, border_color="#e74c3c")
         self.hack_frame.pack(padx=20, pady=10, fill="x")
         
-        self.hack_label = ctk.CTkLabel(self.hack_frame, text="Lanzador de AllHackingTools", font=ctk.CTkFont(size=16, weight="bold"))
+        self.hack_label = ctk.CTkLabel(self.hack_frame, text="Lanzador Inteligente de Herramientas", font=ctk.CTkFont(size=16, weight="bold"))
         self.hack_label.pack(pady=10)
 
         # Obtener lista de carpetas en AllHackingTools
@@ -34,9 +34,13 @@ class App(ctk.CTk):
         self.tool_selector.pack(pady=10, padx=20, fill="x")
         self.tool_selector.set("Selecciona una herramienta")
 
-        self.btn_launch = ctk.CTkButton(self.hack_frame, text="🚀 Ejecutar Herramienta", command=self.launch_tool, 
+        self.btn_launch = ctk.CTkButton(self.hack_frame, text="🚀 Lanzamiento Inteligente", command=self.launch_tool, 
                                        fg_color="#e74c3c", hover_color="#c0392b")
         self.btn_launch.pack(pady=10)
+
+        # Log de detección (Estado)
+        self.status_label = ctk.CTkLabel(self.hack_frame, text="Estado: Esperando selección...", font=ctk.CTkFont(size=12, slant="italic"))
+        self.status_label.pack(pady=(0, 10))
 
         # --- SECCIÓN DE PROGRESO ---
         self.counter_frame = ctk.CTkFrame(self)
@@ -65,32 +69,51 @@ class App(ctk.CTk):
 
     def get_tools(self):
         try:
-            # Listar solo directorios que no empiecen con punto
-            return [d for d in os.listdir(self.tools_path) 
-                    if os.path.isdir(os.path.join(self.tools_path, d)) and not d.startswith('.')]
+            return sorted([d for d in os.listdir(self.tools_path) 
+                    if os.path.isdir(os.path.join(self.tools_path, d)) and not d.startswith('.')])
         except Exception:
             return ["Error al cargar herramientas"]
+
+    def detect_executable(self, tool_dir):
+        # Prioridad de archivos ejecutables
+        files = os.listdir(tool_dir)
+        
+        # 1. Python Main
+        for f in ["main.py", "MainMenu.py", "start.py", "run.py"]:
+            if f in files: return f"python3 {f}"
+        
+        # 2. Shell Scripts
+        for f in ["install.sh", "setup.sh", "start.sh", "run.sh"]:
+            if f in files: return f"bash {f}"
+        
+        # 3. Cualquier .py o .sh
+        for f in files:
+            if f.endswith(".py"): return f"python3 {f}"
+            if f.endswith(".sh"): return f"bash {f}"
+            
+        return "ls -la" # Fallback si no hay nada claro
 
     def launch_tool(self):
         tool = self.tool_selector.get()
         if tool == "Selecciona una herramienta" or tool == "Error al cargar herramientas":
-            messagebox.showwarning("Aviso", "Por favor, selecciona una herramienta válida.")
+            messagebox.showwarning("Aviso", "Selecciona una herramienta válida.")
             return
         
         tool_dir = os.path.join(self.tools_path, tool)
+        exec_cmd = self.detect_executable(tool_dir)
         
-        # Intentar ejecutar el archivo principal de la herramienta (Install.sh, MainMenu.py, etc.)
-        # Nota: En Termux, para interactuar con la terminal, lo mejor es abrir una nueva sesión.
-        # Aquí lanzaremos un comando que intente abrir la herramienta.
+        # Mensaje de confirmación con el comando detectado
+        self.status_label.configure(text=f"Detectado: {exec_cmd}", text_color="#2ecc71")
+        
+        full_command = f"cd {tool_dir} && {exec_cmd}"
+        
+        # En Termux-X11, lo ideal es enviar el comando a una nueva sesión de terminal
+        # O usar am start para abrir una nueva pestaña de Termux
         try:
-            # Intentamos buscar un ejecutable común
-            cmd = f"cd {tool_dir} && (python3 MainMenu.py || python MainMenu.py || bash Install.sh || bash setup.sh || ls)"
-            # Ejecutamos en una nueva ventana de terminal si es posible, o mostramos el comando
-            messagebox.showinfo("Lanzador", f"Ejecutando {tool} en la terminal de Termux...\nComando: {cmd}")
-            # Esto lo ejecuta en el proceso de Termux de fondo
-            subprocess.Popen(["termux-open-url", f"https://google.com"]) # Placeholder o acción real
-            # Para ejecutar realmente en la terminal visible:
-            os.system(f"am startservice --user 0 -a com.termux.service_execute -n com.termux/.app.TermuxService -d {tool_dir}")
+            # Copiamos al portapapeles o mostramos info (ya que estamos en GUI X11)
+            # Para ejecutarlo realmente en la terminal principal de Termux:
+            os.system(f"am startservice --user 0 -a com.termux.service_execute -n com.termux/.app.TermuxService -d {full_command}")
+            messagebox.showinfo("Lanzador Inteligente", f"Herramienta: {tool}\nComando ejecutado: {exec_cmd}\n\nRevisa tu terminal principal de Termux.")
         except Exception as e:
             messagebox.showerror("Error", f"No se pudo iniciar: {str(e)}")
 
@@ -105,7 +128,7 @@ class App(ctk.CTk):
     def save_note(self):
         with open("notas.txt", "w") as f:
             f.write(self.textbox.get("0.0", "end"))
-        messagebox.showinfo("Éxito", "Notas guardadas correctamente.")
+        messagebox.showinfo("Éxito", "Notas guardadas.")
 
 if __name__ == "__main__":
     app = App()
