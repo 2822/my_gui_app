@@ -20,11 +20,11 @@ class App(ctk.CTk):
 
         # Título
         self.label = ctk.CTkLabel(self, text="🚀 Termux GUI Pro", font=ctk.CTkFont(size=24, weight="bold"))
-        self.grid(row=0, column=0, padx=20, pady=(20, 10), sticky="ew")
+        self.label.pack(padx=20, pady=(20, 10), fill="x")
 
         # Sección de Contador y Progreso
         self.counter_frame = ctk.CTkFrame(self)
-        self.counter_frame.grid(row=1, column=0, padx=20, pady=10, sticky="nsew")
+        self.counter_frame.pack(padx=20, pady=10, fill="both", expand=True)
         self.counter_frame.grid_columnconfigure(0, weight=1)
 
         self.label_counter = ctk.CTkLabel(self.counter_frame, text=f"Progreso del Contador: {self.counter}%", font=ctk.CTkFont(size=14))
@@ -40,10 +40,10 @@ class App(ctk.CTk):
 
         # Sección de Notas
         self.notes_label = ctk.CTkLabel(self, text="Bloc de Notas (Autoguardado):", font=ctk.CTkFont(size=14, weight="bold"))
-        self.notes_label.grid(row=3, column=0, padx=20, pady=(10, 5), sticky="w")
+        self.notes_label.pack(padx=20, pady=(10, 5), anchor="w")
 
         self.textbox = ctk.CTkTextbox(self, width=400, height=150)
-        self.textbox.grid(row=4, column=0, padx=20, pady=10, sticky="nsew")
+        self.textbox.pack(padx=20, pady=10, fill="both", expand=True)
         
         # Cargar nota previa si existe
         if os.path.exists("notas.txt"):
@@ -52,7 +52,7 @@ class App(ctk.CTk):
 
         # Botones de Acción Inferiores
         self.actions_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.actions_frame.grid(row=5, column=0, padx=20, pady=20, sticky="ew")
+        self.actions_frame.pack(padx=20, pady=20, fill="x")
         self.actions_frame.grid_columnconfigure((0, 1), weight=1)
 
         self.btn_save = ctk.CTkButton(self.actions_frame, text="Guardar Nota", command=self.save_note)
