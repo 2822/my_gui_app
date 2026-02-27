@@ -14,9 +14,9 @@ class App(ctk.CTk):
         self.title("Termux Clean Hub Pro")
         self.geometry("800x600") # Tamaño inicial razonable
         
-        # Ya no forzamos pantalla completa para que Openbox ponga los controles
-        # Pero permitimos que el usuario la maximice si quiere
-        self.tools_path = "/data/data/com.termux/files/home/AllHackingTools"
+        # Sincronizado con el directorio Home de Termux
+        self.home_path = "/data/data/com.termux/files/home"
+        self.hacking_tools_path = os.path.join(self.home_path, "AllHackingTools")
 
         # Título
         self.label = ctk.CTkLabel(self, text="🛡️ X11 Integrated Hub", font=ctk.CTkFont(size=26, weight="bold"))
@@ -26,10 +26,12 @@ class App(ctk.CTk):
         self.hack_frame = ctk.CTkFrame(self, border_width=2, border_color="#e74c3c")
         self.hack_frame.pack(padx=30, pady=20, fill="x")
         
-        self.hack_label = ctk.CTkLabel(self.hack_frame, text="Lanzador en Ventana de X11", font=ctk.CTkFont(size=18, weight="bold"))
+        self.hack_label = ctk.CTkLabel(self.hack_frame, text="Lanzador de Herramientas (Home Sync)", font=ctk.CTkFont(size=18, weight="bold"))
         self.hack_label.pack(pady=15)
 
+        # Obtener lista de carpetas en Home y AllHackingTools
         self.tools_list = self.get_tools()
+        
         self.tool_selector = ctk.CTkOptionMenu(self.hack_frame, values=self.tools_list, fg_color="#c0392b", button_color="#a93226")
         self.tool_selector.pack(pady=15, padx=30, fill="x")
         self.tool_selector.set("Selecciona una herramienta")
@@ -38,7 +40,7 @@ class App(ctk.CTk):
                                        fg_color="#e74c3c", hover_color="#c0392b", height=40)
         self.btn_launch.pack(pady=20)
 
-        self.status_label = ctk.CTkLabel(self.hack_frame, text="Estado: Sistema Listo", font=ctk.CTkFont(size=12, slant="italic"))
+        self.status_label = ctk.CTkLabel(self.hack_frame, text="Estado: Sincronizado con Home", font=ctk.CTkFont(size=12, slant="italic"))
         self.status_label.pack(pady=(0, 15))
 
         # --- SECCIÓN DE ACCIONES INFERIORES ---
@@ -60,38 +62,59 @@ class App(ctk.CTk):
         self.appearance_mode_menu.pack(pady=10, side="bottom")
 
     def get_tools(self):
+        tools = []
         try:
-            return sorted([d for d in os.listdir(self.tools_path) 
-                    if os.path.isdir(os.path.join(self.tools_path, d)) and not d.startswith('.')])
+            # Escanear Home (excluyendo carpetas ocultas y la propia app)
+            home_tools = [d for d in os.listdir(self.home_path) 
+                         if os.path.isdir(os.path.join(self.home_path, d)) 
+                         and not d.startswith('.') 
+                         and d not in ["my_gui_app", "storage"]]
+            tools.extend(home_tools)
+            
+            # Escanear AllHackingTools si existe
+            if os.path.exists(self.hacking_tools_path):
+                hacking_tools = [f"AHT/{d}" for d in os.listdir(self.hacking_tools_path) 
+                                if os.path.isdir(os.path.join(self.hacking_tools_path, d)) 
+                                and not d.startswith('.')]
+                tools.extend(hacking_tools)
+                
+            return sorted(tools)
         except Exception:
-            return ["Error al cargar herramientas"]
+            return ["Error al sincronizar Home"]
 
     def detect_executable(self, tool_dir):
         files = os.listdir(tool_dir)
-        for f in ["main.py", "MainMenu.py", "start.py", "run.py"]:
+        # Prioridad de archivos ejecutables
+        for f in ["main.py", "MainMenu.py", "start.py", "run.py", "app.py"]:
             if f in files: return f"python3 {f}"
-        for f in ["install.sh", "setup.sh", "start.sh", "run.sh"]:
+        for f in ["install.sh", "setup.sh", "start.sh", "run.sh", "Install.sh"]:
             if f in files: return f"bash {f}"
+        # Cualquier .py o .sh
         for f in files:
             if f.endswith(".py"): return f"python3 {f}"
             if f.endswith(".sh"): return f"bash {f}"
         return ""
 
     def launch_tool(self):
-        tool = self.tool_selector.get()
-        if tool == "Selecciona una herramienta":
+        tool_selection = self.tool_selector.get()
+        if tool_selection == "Selecciona una herramienta":
             return
         
-        tool_dir = os.path.join(self.tools_path, tool)
+        # Determinar la ruta real (si es de AllHackingTools o de Home)
+        if tool_selection.startswith("AHT/"):
+            tool_name = tool_selection.replace("AHT/", "")
+            tool_dir = os.path.join(self.hacking_tools_path, tool_name)
+        else:
+            tool_dir = os.path.join(self.home_path, tool_selection)
+        
         exec_cmd = self.detect_executable(tool_dir)
         
         if not exec_cmd:
             exec_cmd = "bash" # Fallback a terminal si no se detecta nada
 
-        self.status_label.configure(text=f"Abriendo: {tool}...", text_color="#2ecc71")
+        self.status_label.configure(text=f"Abriendo: {tool_selection}...", text_color="#2ecc71")
         
         # Ejecutamos en una nueva ventana de aterm dentro de X11
-        # El comando 'aterm -e bash -c ...' mantiene la terminal abierta al terminar
         command = f"cd {tool_dir} && chmod +x {exec_cmd.split()[-1]} && {exec_cmd}; exec bash"
         subprocess.Popen(["aterm", "-e", "bash", "-c", command])
 
